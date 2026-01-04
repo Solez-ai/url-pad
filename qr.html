@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="logo.png">
+<title>QR Code - URLPad</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        color-scheme: dark;
+        background-color: #000;
+        color: #fff;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font: 18px / 1.5 system-ui;
+        padding: 20px;
+    }
+
+    #qrcode {
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    #qrcode svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: 400px;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 6px;
+        text-decoration-thickness: 1px;
+        transition: opacity 0.2s;
+    }
+</style>
+
+<div id="qrcode"></div>
+<a id="link" href="/">Back to URLPad</a>
+
+<script src="qrcode.min.js"></script>
+<script>
+    function render() {
+        const hash = location.hash
+        const url = location.origin + '/' + hash
+        const link = document.getElementById('link')
+        link.href = '/' + hash
+
+        const typeNumber = 0
+        const errorCorrectionLevel = 'L'
+        const qr = qrcode(typeNumber, errorCorrectionLevel)
+        qr.addData(url)
+        qr.make()
+        document.getElementById('qrcode').innerHTML = qr.createSvgTag({ cellSize: 8, margin: 0 })
+    }
+
+    render()
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+    }
+    addEventListener('hashchange', render)
+</script>
