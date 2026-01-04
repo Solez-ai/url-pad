@@ -30,16 +30,17 @@
 
     #qrcode {
         background: white;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 32px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        display: inline-block;
     }
 
     #qrcode svg {
         display: block;
-        width: 100%;
-        height: auto;
-        max-width: 400px;
+        width: 400px;
+        height: 400px;
     }
 
     a {
@@ -67,7 +68,7 @@
         const qr = qrcode(typeNumber, errorCorrectionLevel)
         qr.addData(url)
         qr.make()
-        document.getElementById('qrcode').innerHTML = qr.createSvgTag({ cellSize: 8, margin: 0 })
+        document.getElementById('qrcode').innerHTML = qr.createSvgTag({ cellSize: 10, margin: 4 })
     }
 
     render()
