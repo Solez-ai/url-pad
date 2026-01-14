@@ -17,7 +17,7 @@ addEventListener('keydown', e => {
   }
 })
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
+  navigator.serviceWorker.register('sw.js?v=' + Date.now())
 }
 
 console.log('%cURLPad by Samin Yeasar\n%chttps://github.com/Solez-ai/url-pad', 'font-size: 18px; font-weight: bold; color: #0569fa;', 'font-size: 14px; color: #666; border: 1px solid #0569fa; border-radius: 8px; padding: 8px 12px; margin-top: 4px;')

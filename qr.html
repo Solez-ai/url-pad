@@ -55,29 +55,41 @@
 <div id="qrcode"></div>
 <a id="link" href="/">Back to URLPad</a>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     function render() {
-        if (typeof qrcode === 'undefined') {
+        const hash = location.hash;
+        const url = location.origin + '/' + hash;
+        const link = document.getElementById('link');
+        link.href = '/' + hash;
+
+        // clear previous qr code
+        document.getElementById('qrcode').innerHTML = "";
+
+        if (typeof QRCode === 'undefined') {
+            // Basic retry
             setTimeout(render, 100);
             return;
         }
-        const hash = location.hash
-        const url = location.origin + '/' + hash
-        const link = document.getElementById('link')
-        link.href = '/' + hash
 
-        const typeNumber = 0
-        const errorCorrectionLevel = 'L'
-        const qr = qrcode(typeNumber, errorCorrectionLevel)
-        qr.addData(url)
-        qr.make()
-        document.getElementById('qrcode').innerHTML = qr.createSvgTag({ cellSize: 10, margin: 4 })
+        new QRCode(document.getElementById("qrcode"), {
+            text: url,
+            width: 400,
+            height: 400,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
+        });
     }
 
-    render()
+    // Add timestamp to SW registration to help with cache busting
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
+        navigator.serviceWorker.register('sw.js?v=' + Date.now());
     }
-    addEventListener('hashchange', render)
+
+    // Initial render
+    render();
+
+    // Re-render on hash change
+    addEventListener('hashchange', render);
 </script>
