@@ -9,13 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Solez-ai/url-pad">Source Code</a>
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/JavaScript-Vanilla-black" />
   <img src="https://img.shields.io/badge/Storage-URL%20Hash-blue" />
-  <img src="https://img.shields.io/badge/Backend-None-success" />
+  <img src="https://img.shields.io/badge/Backend-None (Privacy First)-success" />
   <img src="https://img.shields.io/badge/License-MIT-lightgrey" />
 </p>
 

@@ -9,7 +9,7 @@ article.addEventListener('click', event => {
 })
 addEventListener('DOMContentLoaded', load)
 addEventListener('hashchange', load)
-addEventListener('load', () => new MutationObserver(save).observe(article, {attributeFilter: ['style']}))
+addEventListener('load', () => new MutationObserver(save).observe(article, { attributeFilter: ['style'] }))
 addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') {
     e.preventDefault()
@@ -71,11 +71,11 @@ async function compress(string) {
   writer.write(byteArray)
   writer.close()
   const buffer = await new Response(stream.readable).arrayBuffer()
-  return new Uint8Array(buffer).toBase64({alphabet: 'base64url'})
+  return new Uint8Array(buffer).toBase64({ alphabet: 'base64url' })
 }
 
 async function decompress(b64) {
-  const byteArray = Uint8Array.fromBase64(b64, {alphabet: 'base64url'})
+  const byteArray = Uint8Array.fromBase64(b64, { alphabet: 'base64url' })
   const stream = new DecompressionStream('deflate-raw')
   const writer = stream.writable.getWriter()
   writer.write(byteArray)
@@ -106,7 +106,7 @@ async function download() {
         suggestedName: document.title + '.html',
         types: [{
           description: 'HTML file',
-          accept: {'text/html': ['.html']},
+          accept: { 'text/html': ['.html'] },
         }],
       })
       const writable = await handle.createWritable()
@@ -118,7 +118,7 @@ async function download() {
     }
   }
 
-  const blob = new Blob([html], {type: 'text/html'})
+  const blob = new Blob([html], { type: 'text/html' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -132,19 +132,19 @@ function parseMarkdown(element) {
   const frag = document.createDocumentFragment()
 
   const matchers = [
-    {name: 'md-codeblock', re: /```[^\n]*\n[\s\S]*?\n```/y},
-    {name: 'md-codeblock', re: /~~~[^\n]*\n[\s\S]*?\n~~~/y},
-    {name: 'md-h1', re: /^#[ \t]+[^\n]*$/my},
-    {name: 'md-h2', re: /^##[ \t]+[^\n]*$/my},
-    {name: 'md-h3', re: /^###[ \t]+[^\n]*$/my},
-    {name: 'md-h4', re: /^####[ \t]+[^\n]*$/my},
-    {name: 'md-h5', re: /^#####[ \t]+[^\n]*$/my},
-    {name: 'md-h6', re: /^######[ \t]+[^\n]*$/my},
-    {name: 'md-code', re: /`[^`\n]*`/y},
-    {name: 'md-bold', re: /\*\*[^*\n]+?\*\*/y},
-    {name: 'md-strike', re: /~~[^~\n]+?~~/y},
-    {name: 'md-italic', re: /\*[^*\n]+?\*/y},
-    {name: 'md-url', re: /https?:\/\/[^\s<>()\[\]{}\"'`]+/y},
+    { name: 'md-codeblock', re: /```[^\n]*\n[\s\S]*?\n```/y },
+    { name: 'md-codeblock', re: /~~~[^\n]*\n[\s\S]*?\n~~~/y },
+    { name: 'md-h1', re: /^#[ \t]+[^\n]*$/my },
+    { name: 'md-h2', re: /^##[ \t]+[^\n]*$/my },
+    { name: 'md-h3', re: /^###[ \t]+[^\n]*$/my },
+    { name: 'md-h4', re: /^####[ \t]+[^\n]*$/my },
+    { name: 'md-h5', re: /^#####[ \t]+[^\n]*$/my },
+    { name: 'md-h6', re: /^######[ \t]+[^\n]*$/my },
+    { name: 'md-code', re: /`[^`\n]*`/y },
+    { name: 'md-bold', re: /\*\*[^*\n]+?\*\*/y },
+    { name: 'md-strike', re: /~~[^~\n]+?~~/y },
+    { name: 'md-italic', re: /\*[^*\n]+?\*/y },
+    { name: 'md-url', re: /https?:\/\/[^\s<>()\[\]{}\"'`]+/y },
   ]
 
   const specials = ['`', '~', '*', '#', 'h']
@@ -204,6 +204,15 @@ function initUI() {
   const menu = document.querySelector('#menu')
   const button = document.querySelector('#button')
   const qr = document.querySelector('#qr')
+  const shortenBtn = document.querySelector('#shorten')
+  const dialog = document.querySelector('#shorten-dialog')
+  const closeDialogBtn = document.querySelector('#close-dialog')
+  const doShortenBtn = document.querySelector('#shorten-btn')
+  const advancedToggle = document.querySelector('#advanced-toggle')
+  const advancedOptions = document.querySelector('#advanced-options')
+  const resultContainer = document.querySelector('#result-container')
+  const shortUrlEl = document.querySelector('#short-url')
+  const copyBtn = document.querySelector('#copy-btn')
 
   button.addEventListener('click', event => {
     ripple(event)
@@ -216,8 +225,97 @@ function initUI() {
     if (t.closest('#menu')) return
     if (t.closest('#button')) return
     if (t.closest('.ripple')) return
+    if (t.closest('dialog')) return
     menu.classList.remove('visible')
+    if (dialog && dialog.open) dialog.close()
   })
+
+  if (shortenBtn) {
+    shortenBtn.addEventListener('click', () => {
+      menu.classList.remove('visible')
+      dialog.showModal()
+      // Reset state
+      resultContainer.style.display = 'none'
+      doShortenBtn.textContent = 'Shorten Current URL'
+      doShortenBtn.disabled = false
+    })
+  }
+
+  if (closeDialogBtn) {
+    closeDialogBtn.addEventListener('click', () => {
+      dialog.close()
+    })
+  }
+
+  if (advancedToggle) {
+    advancedToggle.addEventListener('click', () => {
+      advancedOptions.classList.toggle('visible')
+      advancedToggle.textContent = advancedOptions.classList.contains('visible')
+        ? 'Hide Advanced Options'
+        : 'Advanced Options'
+    })
+  }
+
+  if (doShortenBtn) {
+    doShortenBtn.addEventListener('click', async () => {
+      const originalText = doShortenBtn.textContent
+      doShortenBtn.textContent = 'Shortening...'
+      doShortenBtn.disabled = true
+
+      const payload = {
+        long_url: location.href,
+        private_stats: false
+      }
+
+      const alias = document.querySelector('#custom-alias').value
+      const password = document.querySelector('#password').value
+      const maxClicks = document.querySelector('#max-clicks').value
+
+      if (alias) payload.alias = alias
+      if (password) payload.password = password
+      if (maxClicks) payload.max_clicks = parseInt(maxClicks)
+
+      try {
+        const response = await fetch('https://spoo.me/api/v1/shorten', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer spoo_CNbMn6UjivNriTIpAO5Aaf61TaiTuorfSvMtzegYUAg'
+          },
+          body: JSON.stringify(payload)
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          resultContainer.style.display = 'block'
+          shortUrlEl.href = data.short_url
+          shortUrlEl.textContent = data.short_url
+          doShortenBtn.textContent = 'Shortened!'
+        } else {
+          alert('Error: ' + (data.error || 'Failed to shorten URL'))
+          doShortenBtn.textContent = originalText
+          doShortenBtn.disabled = false
+        }
+      } catch (error) {
+        console.error('Error shortening URL:', error)
+        alert('Network error or API issue')
+        doShortenBtn.textContent = originalText
+        doShortenBtn.disabled = false
+      }
+    })
+  }
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(shortUrlEl.href)
+      const originalText = copyBtn.textContent
+      copyBtn.textContent = 'Copied!'
+      setTimeout(() => {
+        copyBtn.textContent = originalText
+      }, 2000)
+    })
+  }
 }
 
 function ripple(event) {
@@ -290,8 +388,8 @@ function Editor(element, highlight) {
 
   function save() {
     const s = getSelection()
-    const pos = {start: 0, end: 0, dir: undefined}
-    let {anchorNode, anchorOffset, focusNode, focusOffset} = s
+    const pos = { start: 0, end: 0, dir: undefined }
+    let { anchorNode, anchorOffset, focusNode, focusOffset } = s
     if (!anchorNode || !focusNode) throw 'error1'
     if (anchorNode === element && focusNode === element) {
       pos.start = (anchorOffset > 0 && element.textContent) ? element.textContent.length : 0
@@ -353,7 +451,7 @@ function Editor(element, highlight) {
     if (pos.end < 0) pos.end = 0
 
     if (pos.dir === '<-') {
-      const {start, end} = pos
+      const { start, end } = pos
       pos.start = end
       pos.end = start
     }
@@ -456,7 +554,7 @@ function Editor(element, highlight) {
       && lastRecord.pos.end === pos.end
     ) return
     at++
-    history[at] = {html, pos}
+    history[at] = { html, pos }
     history.splice(at + 1)
     const maxHistory = 10_000
     if (at > maxHistory) {

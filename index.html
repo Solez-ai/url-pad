@@ -212,6 +212,167 @@
             visibility: hidden !important;
         }
     }
+
+    dialog {
+        background: var(--elevated);
+        color: var(--text);
+        border: 1px solid rgba(128, 128, 128, 0.2);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-title {
+        font-size: 1.25em;
+        font-weight: 600;
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 1.5em;
+        padding: 4px;
+        line-height: 1;
+        opacity: 0.7;
+    }
+
+    .close-button:hover {
+        opacity: 1;
+    }
+
+    .input-group {
+        margin-bottom: 16px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+        opacity: 0.8;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text);
+        font-size: 1em;
+    }
+
+    .action-button {
+        width: 100%;
+        padding: 12px;
+        background: #0569fa;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .action-button:hover {
+        background: #3c86f3;
+    }
+
+    .advanced-toggle {
+        background: none;
+        border: none;
+        color: var(--link);
+        cursor: pointer;
+        font-size: 0.9em;
+        padding: 0;
+        margin-top: 12px;
+        text-decoration: underline;
+    }
+
+    .advanced-options {
+        display: none;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(128, 128, 128, 0.1);
+    }
+
+    .advanced-options.visible {
+        display: block;
+    }
+
+    .result-container {
+        display: none;
+        margin-top: 20px;
+        padding: 16px;
+        background: rgba(5, 105, 250, 0.1);
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .shortened-link {
+        display: block;
+        margin-bottom: 12px;
+        font-weight: 600;
+        color: var(--link);
+        text-decoration: none;
+        word-break: break-all;
+    }
+
+    .copy-button {
+        background: var(--elevated);
+        border: 1px solid var(--link);
+        color: var(--link);
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip-text {
+        visibility: hidden;
+        width: 240px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -120px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.8em;
+        font-weight: normal;
+        pointer-events: none;
+    }
+
+    .tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
 </style>
 <article contenteditable="plaintext-only" spellcheck autofocus></article>
 <button id="button" class="noprint">
@@ -225,6 +386,42 @@
 <div id="menu">
     <a class="item" href="#new" target="_blank">New document</a>
     <a class="item" id="qr" href="/qr">Generate QR code</a>
+    <div class="item" id="shorten">Shorten URL</div>
     <a class="item" href="https://github.com/Solez-ai/url-pad" target="_blank">GitHub</a>
 </div>
+
+<dialog id="shorten-dialog">
+    <div class="modal-header">
+        <div class="modal-title">Shorten URL</div>
+        <button class="close-button" id="close-dialog">×</button>
+    </div>
+
+    <button class="action-button" id="shorten-btn">Shorten Current URL</button>
+
+    <button class="advanced-toggle" id="advanced-toggle">Advanced Options</button>
+
+    <div class="advanced-options" id="advanced-options">
+        <div class="input-group">
+            <label>Custom Alias</label>
+            <input type="text" id="custom-alias" placeholder="e.g. my-note">
+        </div>
+        <div class="input-group">
+            <label>Password Protection</label>
+            <input type="password" id="password" placeholder="Min 8 chars, 1 letter, 1 number, @ or .">
+        </div>
+        <div class="input-group">
+            <label>Max Clicks</label>
+            <input type="number" id="max-clicks" placeholder="e.g. 100">
+        </div>
+    </div>
+
+    <div class="result-container" id="result-container">
+        <div class="tooltip-container">
+            <a href="#" target="_blank" class="shortened-link" id="short-url"></a>
+            <span class="tooltip-text">By Clicking this You Agree to Process your URL outside Our prodcuct to Maybe
+                Other Servers (Powered by Spoo)</span>
+        </div>
+        <button class="copy-button" id="copy-btn">Copy Link</button>
+    </div>
+</dialog>
 <script src="app.js"></script>
