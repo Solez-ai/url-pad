@@ -55,9 +55,13 @@
 <div id="qrcode"></div>
 <a id="link" href="/">Back to URLPad</a>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
     function render() {
+        if (typeof qrcode === 'undefined') {
+            setTimeout(render, 100);
+            return;
+        }
         const hash = location.hash
         const url = location.origin + '/' + hash
         const link = document.getElementById('link')

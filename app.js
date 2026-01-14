@@ -204,15 +204,21 @@ function initUI() {
   const menu = document.querySelector('#menu')
   const button = document.querySelector('#button')
   const qr = document.querySelector('#qr')
-  const shortenBtn = document.querySelector('#shorten')
-  const dialog = document.querySelector('#shorten-dialog')
-  const closeDialogBtn = document.querySelector('#close-dialog')
-  const doShortenBtn = document.querySelector('#shorten-btn')
-  const advancedToggle = document.querySelector('#advanced-toggle')
+
+  // Shortener UI elements
+  const shortenBtn = document.querySelector('#shorten-btn')
+  const modal = document.querySelector('#shorten-modal')
+  const closeModal = document.querySelector('#close-modal')
+  const startShorten = document.querySelector('#do-shorten')
+  const toggleAdvanced = document.querySelector('#toggle-advanced')
   const advancedOptions = document.querySelector('#advanced-options')
-  const resultContainer = document.querySelector('#result-container')
-  const shortUrlEl = document.querySelector('#short-url')
-  const copyBtn = document.querySelector('#copy-btn')
+  const resultArea = document.querySelector('#result-area')
+  const shortUrlInput = document.querySelector('#short-url')
+  const copyUrlBtn = document.querySelector('#copy-url')
+  const termsTip = document.querySelector('#terms-tip')
+  const customAlias = document.querySelector('#custom-alias')
+  const password = document.querySelector('#password')
+  const maxClicks = document.querySelector('#max-clicks')
 
   button.addEventListener('click', event => {
     ripple(event)
@@ -225,97 +231,87 @@ function initUI() {
     if (t.closest('#menu')) return
     if (t.closest('#button')) return
     if (t.closest('.ripple')) return
-    if (t.closest('dialog')) return
+    if (t.closest('.modal')) return
+    if (t.closest('#shorten-btn')) return
     menu.classList.remove('visible')
-    if (dialog && dialog.open) dialog.close()
+    if (t.classList.contains('modal-overlay')) {
+      modal.classList.remove('visible')
+    }
   })
 
-  if (shortenBtn) {
-    shortenBtn.addEventListener('click', () => {
-      menu.classList.remove('visible')
-      dialog.showModal()
-      // Reset state
-      resultContainer.style.display = 'none'
-      doShortenBtn.textContent = 'Shorten Current URL'
-      doShortenBtn.disabled = false
-    })
-  }
+  // Shortener Logic
+  shortenBtn.addEventListener('click', () => {
+    menu.classList.remove('visible')
+    modal.classList.add('visible')
+    resultArea.classList.remove('visible')
+    startShorten.textContent = 'Shorten'
+    startShorten.disabled = false
+  })
 
-  if (closeDialogBtn) {
-    closeDialogBtn.addEventListener('click', () => {
-      dialog.close()
-    })
-  }
+  closeModal.addEventListener('click', () => {
+    modal.classList.remove('visible')
+  })
 
-  if (advancedToggle) {
-    advancedToggle.addEventListener('click', () => {
-      advancedOptions.classList.toggle('visible')
-      advancedToggle.textContent = advancedOptions.classList.contains('visible')
-        ? 'Hide Advanced Options'
-        : 'Advanced Options'
-    })
-  }
+  toggleAdvanced.addEventListener('click', () => {
+    advancedOptions.classList.toggle('visible')
+  })
 
-  if (doShortenBtn) {
-    doShortenBtn.addEventListener('click', async () => {
-      const originalText = doShortenBtn.textContent
-      doShortenBtn.textContent = 'Shortening...'
-      doShortenBtn.disabled = true
+  startShorten.addEventListener('mouseover', () => {
+    termsTip.style.display = 'block'
+  })
 
-      const payload = {
-        long_url: location.href,
-        private_stats: false
+  startShorten.addEventListener('mouseout', () => {
+    termsTip.style.display = 'none'
+  })
+
+  startShorten.addEventListener('click', async () => {
+    const longUrl = location.href
+    startShorten.textContent = 'Shortening...'
+    startShorten.disabled = true
+
+    const payload = {
+      long_url: longUrl
+    }
+
+    if (customAlias.value.trim()) payload.alias = customAlias.value.trim()
+    if (password.value.trim()) payload.password = password.value.trim()
+    if (maxClicks.value.trim()) payload.max_clicks = parseInt(maxClicks.value.trim())
+
+    try {
+      const response = await fetch('https://spoo.me/api/v1/shorten', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer spoo_CNbMn6UjivNriTIpAO5Aaf61TaiTuorfSvMtzegYUAg'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        shortUrlInput.value = data.short_url
+        resultArea.classList.add('visible')
+        startShorten.textContent = 'Shortened!'
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error occurred'))
+        startShorten.textContent = 'Shorten'
+        startShorten.disabled = false
       }
+    } catch (e) {
+      console.error(e)
+      alert('Failed to connect to shortening service')
+      startShorten.textContent = 'Shorten'
+      startShorten.disabled = false
+    }
+  })
 
-      const alias = document.querySelector('#custom-alias').value
-      const password = document.querySelector('#password').value
-      const maxClicks = document.querySelector('#max-clicks').value
-
-      if (alias) payload.alias = alias
-      if (password) payload.password = password
-      if (maxClicks) payload.max_clicks = parseInt(maxClicks)
-
-      try {
-        const response = await fetch('https://spoo.me/api/v1/shorten', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer spoo_CNbMn6UjivNriTIpAO5Aaf61TaiTuorfSvMtzegYUAg'
-          },
-          body: JSON.stringify(payload)
-        })
-
-        const data = await response.json()
-
-        if (response.ok) {
-          resultContainer.style.display = 'block'
-          shortUrlEl.href = data.short_url
-          shortUrlEl.textContent = data.short_url
-          doShortenBtn.textContent = 'Shortened!'
-        } else {
-          alert('Error: ' + (data.error || 'Failed to shorten URL'))
-          doShortenBtn.textContent = originalText
-          doShortenBtn.disabled = false
-        }
-      } catch (error) {
-        console.error('Error shortening URL:', error)
-        alert('Network error or API issue')
-        doShortenBtn.textContent = originalText
-        doShortenBtn.disabled = false
-      }
-    })
-  }
-
-  if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(shortUrlEl.href)
-      const originalText = copyBtn.textContent
-      copyBtn.textContent = 'Copied!'
-      setTimeout(() => {
-        copyBtn.textContent = originalText
-      }, 2000)
-    })
-  }
+  copyUrlBtn.addEventListener('click', () => {
+    shortUrlInput.select()
+    document.execCommand('copy')
+    copyUrlBtn.textContent = 'Copied!'
+    setTimeout(() => copyUrlBtn.textContent = 'Copy', 2000)
+  })
 }
 
 function ripple(event) {
