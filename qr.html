@@ -50,9 +50,27 @@
         text-decoration-thickness: 1px;
         transition: opacity 0.2s;
     }
+
+    #download-btn {
+        margin-top: 16px;
+        background: #0569fa;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        display: none;
+        /* Hidden until QR generates */
+    }
+
+    #download-btn:hover {
+        background: #0056d6;
+    }
 </style>
 
 <div id="qrcode"></div>
+<button id="download-btn">Download Image</button>
 <a id="link" href="/">Back to URLPad</a>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -80,6 +98,22 @@
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.L
         });
+
+        // Show download button and setup click handler
+        const downloadBtn = document.getElementById('download-btn');
+        downloadBtn.style.display = 'block';
+
+        downloadBtn.onclick = function () {
+            const img = document.querySelector('#qrcode img');
+            if (img && img.src) {
+                const a = document.createElement('a');
+                a.href = img.src;
+                a.download = 'urlpad-qr.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        };
     }
 
     // Add timestamp to SW registration to help with cache busting

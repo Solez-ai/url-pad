@@ -1,4 +1,4 @@
-const CACHE_NAME = 'urlpad-2026-01-14-v2'
+const CACHE_NAME = 'urlpad-2026-01-14-v3'
 const ASSETS = [
     '/',
     '/qr',

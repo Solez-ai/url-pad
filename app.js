@@ -256,13 +256,7 @@ function initUI() {
     advancedOptions.classList.toggle('visible')
   })
 
-  startShorten.addEventListener('mouseover', () => {
-    termsTip.style.display = 'block'
-  })
 
-  startShorten.addEventListener('mouseout', () => {
-    termsTip.style.display = 'none'
-  })
 
   startShorten.addEventListener('click', async () => {
     const longUrl = location.href
