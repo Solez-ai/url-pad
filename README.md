@@ -129,11 +129,20 @@ The browser tab title automatically updates to match.
 
 ---
 
+### URL Shortener
+- Built-in URL shortening via Spoo.me API
+- Custom aliases, password protection, and click limits
+- Privacy-focused: Disclaimer before sending data to 3rd party
+- Includes "Copy" and "QR Code" functionality
+
+---
+
 ### Minimal Menu
 A three-dot menu provides:
 - New Document (`/#new`)
+- Shorten URL
+- Generate QR code
 - GitHub repository
-- QR code generation
 
 ---
 
@@ -147,12 +156,13 @@ A three-dot menu provides:
 
 ## Tech Stack
 
-- HTML
-- CSS
-- Vanilla JavaScript
-- Browser Compression API
-- URL Hash
-- LocalStorage (fallback only)
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=html,css,js" />
+</p>
+
+- 🗜️ **Browser Compression API**
+- #️⃣ **URL Hash**
+- 💾 **LocalStorage** (fallback only)
 
 No frameworks. No backend.
 
@@ -170,6 +180,10 @@ The constraint is the feature.
 ## Author
 
 Created by **Samin Yeasar** ([Solez-ai](https://github.com/Solez-ai))
+
+- **Portfolio**: [https://solez.vercel.app](https://solez.vercel.app)
+- **X (Twitter)**: [https://x.com/Solez_None](https://x.com/Solez_None)
+- **Email**: sheditzofficial918@Gmail.com
 
 ---
 

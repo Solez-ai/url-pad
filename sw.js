@@ -1,9 +1,8 @@
-const CACHE_NAME = 'urlpad-2026-01-14-v4'
+const CACHE_NAME = 'urlpad-2026-01-15-v5'
 const ASSETS = [
     '/',
     '/qr',
     '/app.js',
-    '/qrcode.min.js',
     '/logo.png',
 ]
 
