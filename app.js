@@ -205,7 +205,7 @@ function initUI() {
   const button = document.querySelector('#button')
   const qr = document.querySelector('#qr')
 
-  // Shortener UI elements
+
   const shortenBtn = document.querySelector('#shorten-btn')
   const modal = document.querySelector('#shorten-modal')
   const closeModal = document.querySelector('#close-modal')
@@ -239,7 +239,7 @@ function initUI() {
     }
   })
 
-  // Shortener Logic
+
   shortenBtn.addEventListener('click', () => {
     menu.classList.remove('visible')
     modal.classList.add('visible')
@@ -306,6 +306,246 @@ function initUI() {
     copyUrlBtn.textContent = 'Copied!'
     setTimeout(() => copyUrlBtn.textContent = 'Copy', 2000)
   })
+
+
+  const contextMenu = document.getElementById('context-menu')
+
+  document.addEventListener('contextmenu', e => {
+
+    if (e.shiftKey || e.altKey) return
+
+
+    const isEditor = e.target.closest('article')
+    const isInput = e.target.nodeName === 'INPUT' || e.target.nodeName === 'TEXTAREA' || e.target.contentEditable === 'true'
+
+
+    if (!isEditor && !isInput) return
+    if (!isEditor) return
+
+    e.preventDefault()
+
+    const selection = window.getSelection()
+    const hasSelection = selection.toString().length > 0
+
+    contextMenu.innerHTML = ''
+
+    if (hasSelection) {
+      addMenuItem('Copy', 'Ctrl+C', () => document.execCommand('copy'))
+      addSeparator()
+      addMenuItem('Bold', '**text**', () => wrapSelection('**', '**'))
+      addMenuItem('Italic', '*text*', () => wrapSelection('*', '*'))
+      addMenuItem('Inline Code', '`text`', () => wrapSelection('`', '`'))
+    } else {
+
+      addMenuItem('Paste', 'Ctrl+V', async () => {
+        try {
+          const text = await navigator.clipboard.readText()
+          if (text) insertTextAtCursor(text)
+        } catch (err) {
+
+          alert('Please use Ctrl+V to paste.')
+        }
+      })
+
+      addSeparator()
+
+
+
+      addMenuItem('Heading 1', 'H1', () => insertTextAtCursor('# '))
+      addMenuItem('Heading 2', 'H2', () => insertTextAtCursor('## '))
+      addMenuItem('Heading 3', 'H3', () => insertTextAtCursor('### '))
+
+      addMenuItem('See more...', '', (e) => {
+        e.stopPropagation()
+
+        const btn = e.target.closest('.context-menu-item')
+        const nextSibling = btn.nextSibling
+
+
+        const insert = (label, shortcut, action) => {
+          const item = createMenuItem(label, shortcut, action)
+          if (nextSibling) {
+            contextMenu.insertBefore(item, nextSibling)
+          } else {
+            contextMenu.appendChild(item)
+          }
+        }
+
+        btn.remove()
+        insert('Heading 4', 'H4', () => insertTextAtCursor('#### '))
+        insert('Heading 5', 'H5', () => insertTextAtCursor('##### '))
+        insert('Heading 6', 'H6', () => insertTextAtCursor('###### '))
+      }, true)
+
+      addSeparator()
+
+      addCodeBlockItems()
+
+
+      const hint = document.createElement('div')
+      hint.className = 'context-menu-hint'
+      hint.innerHTML = 'Press CTRL+SHIFT+I for CSS Styling<br>(Add &lt;style&gt; and Your css in Article element)'
+      contextMenu.appendChild(hint)
+
+
+      const hint2 = document.createElement('div')
+      hint2.className = 'context-menu-hint'
+      hint2.innerHTML = 'Hold SHIFT + Right Click for Native Menu<br>(Spellcheck, Browser Options)'
+      contextMenu.appendChild(hint2)
+    }
+
+
+    contextMenu.classList.add('visible')
+
+
+    const { clientX: mouseX, clientY: mouseY } = e
+
+    const menuRect = contextMenu.getBoundingClientRect()
+
+    let x = mouseX
+    let y = mouseY
+
+    const winWidth = window.innerWidth
+    const winHeight = window.innerHeight
+
+
+
+    contextMenu.style.left = `${x}px`
+    contextMenu.style.top = `${y}px`
+
+
+    requestAnimationFrame(() => {
+      const rect = contextMenu.getBoundingClientRect()
+      if (x + rect.width > winWidth) x = winWidth - rect.width - 10
+      if (y + rect.height > winHeight) y = winHeight - rect.height - 10
+      contextMenu.style.left = `${x}px`
+      contextMenu.style.top = `${y}px`
+    })
+
+  })
+
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#context-menu')) {
+      contextMenu.classList.remove('visible')
+    }
+  })
+
+
+  document.addEventListener('scroll', () => contextMenu.classList.remove('visible'))
+
+
+  function createMenuItem(label, shortcut, action, keepOpen = false) {
+    const item = document.createElement('div')
+    item.className = 'context-menu-item'
+    item.innerHTML = `<span>${label}</span>${shortcut ? `<span class="context-menu-shortcut">${shortcut}</span>` : ''}`
+    item.onclick = (e) => {
+      if (!keepOpen) {
+        contextMenu.classList.remove('visible')
+      }
+      if (action) action(e)
+    }
+    return item
+  }
+
+  function addMenuItem(label, shortcut, action, keepOpen = false) {
+    const item = createMenuItem(label, shortcut, action, keepOpen)
+    contextMenu.appendChild(item)
+    return item
+  }
+
+  function addSeparator() {
+    const sep = document.createElement('div')
+    sep.className = 'context-menu-separator'
+    contextMenu.appendChild(sep)
+  }
+
+  function addCodeBlockItems() {
+
+    addMenuItem('Code Block', '```', () => {
+      const code = '```\n\n```'
+      insertTextAtCursor(code)
+      moveCursor(-4)
+    })
+
+
+    addMenuItem('Code Block (js)', '```js', () => {
+      const code = '```js\n\n```'
+      insertTextAtCursor(code)
+
+      moveCursor(-5)
+    })
+
+
+    addMenuItem('Link', 'URL', async () => {
+      const urlRaw = prompt('Enter URL:')
+      if (!urlRaw) return
+      let url = urlRaw.trim()
+      if (!/^https?:\/\//i.test(url) && url.includes('.')) {
+        url = 'https://' + url
+      }
+
+      insertTextAtCursor(url)
+    })
+  }
+
+  function wrapSelection(prefix, suffix) {
+    const selection = window.getSelection()
+    if (!selection.rangeCount) return
+    const range = selection.getRangeAt(0)
+    const text = range.toString()
+
+
+    document.execCommand('insertText', false, prefix + text + suffix)
+  }
+
+  function insertTextAtCursor(text) {
+    const selection = window.getSelection()
+    if (!selection.rangeCount) return
+    const range = selection.getRangeAt(0)
+    range.deleteContents()
+
+
+    if (document.queryCommandSupported('insertText')) {
+      document.execCommand('insertText', false, text)
+    } else {
+
+      const textNode = document.createTextNode(text)
+      range.insertNode(textNode)
+      range.setStartAfter(textNode)
+      range.setEndAfter(textNode)
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      article.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+  }
+
+  function moveCursor(offset) {
+
+    const selection = window.getSelection()
+    if (!selection.rangeCount) return
+    const range = selection.getRangeAt(0)
+
+
+
+    if (offset === 0) return
+
+
+
+    let node = range.endContainer
+    let pos = range.endOffset
+
+    if (node.nodeType === Node.TEXT_NODE) {
+      let newPos = pos + offset
+      if (newPos >= 0 && newPos <= node.length) {
+        range.setStart(node, newPos)
+        range.setEnd(node, newPos)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      }
+    }
+  }
 }
 
 function ripple(event) {

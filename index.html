@@ -325,6 +325,101 @@
         margin-top: 4px;
         display: block;
     }
+
+    /* Custom Context Menu */
+    .context-menu {
+        position: fixed;
+        background: var(--elevated);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 12px;
+        padding: 6px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        min-width: 220px;
+        visibility: hidden;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: opacity 0.1s ease, transform 0.1s ease;
+        color: var(--text);
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .context-menu.visible {
+        visibility: visible;
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .context-menu-item {
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.15s;
+        user-select: none;
+        position: relative;
+    }
+
+    .context-menu-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .context-menu-item svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.7;
+    }
+
+    .context-menu-separator {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 4px 0;
+    }
+
+    .context-menu-shortcut {
+        opacity: 0.5;
+        font-size: 12px;
+    }
+
+    /* Nested Menu */
+    .context-submenu {
+        position: absolute;
+        left: 100%;
+        top: -6px;
+        background: var(--elevated);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        border-radius: 12px;
+        padding: 6px;
+        min-width: 180px;
+        visibility: hidden;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: opacity 0.1s ease, transform 0.1s ease;
+    }
+
+    .context-menu-item:hover .context-submenu {
+        visibility: visible;
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .context-menu-hint {
+        font-size: 10px;
+        opacity: 0.4;
+        padding: 8px 12px 4px;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 4px;
+        line-height: 1.4;
+    }
 </style>
 <article contenteditable="plaintext-only" spellcheck autofocus></article>
 <button id="button" class="noprint">
@@ -371,5 +466,9 @@
             By clicking this you agree to process your URL <br> outside our product.
         </span>
     </div>
+</div>
+
+<div id="context-menu" class="context-menu">
+    <!-- Content injected via JS -->
 </div>
 <script src="app.js"></script>

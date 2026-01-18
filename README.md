@@ -146,6 +146,22 @@ A three-dot menu provides:
 
 ---
 
+### Custom Context Menu
+A modern, dark-themed right-click menu visually integrated with the URLPad interface.
+
+**When Text Is Selected:**
+- Format: Bold (`**`), Italic (`*`), Inline Code (`` ` ``)
+- Copy
+
+**When No Text Is Selected:**
+- Insert: Tab (Headings 1-6), Code Blocks (Generic & JS), Links
+- Paste
+- Native Copy/Paste support retained
+
+> **Note:** Hold `Shift + Right Click` to access the native browser menu (Spellcheck, Inspect, etc.).
+
+---
+
 ## Deployment
 - Hosted on Vercel or any static host
 - Fully static
