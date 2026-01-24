@@ -13,7 +13,15 @@ addEventListener('load', () => new MutationObserver(save).observe(article, { att
 addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') {
     e.preventDefault()
-    download()
+    const saveModal = document.getElementById('save-modal')
+    const saveOptions = document.getElementById('save-options')
+    const filenameInputArea = document.getElementById('filename-input-area')
+
+    if (saveModal && saveOptions && filenameInputArea) {
+      saveModal.classList.add('visible')
+      saveOptions.style.display = 'block'
+      filenameInputArea.style.display = 'none'
+    }
   }
 })
 if ('serviceWorker' in navigator) {
@@ -127,6 +135,34 @@ async function download() {
   URL.revokeObjectURL(url)
 }
 
+function saveAsMarkdown(filename) {
+  const article = document.querySelector('article')
+  const content = article.textContent
+  const style = article.getAttribute('style')
+
+  let finalContent = content
+  // Preserve background/font if style attribute exists
+  if (style) {
+    // Injects style for markdown viewers that support HTML/CSS
+    finalContent = `<style>body { ${style} }</style>\n\n` + content
+  }
+
+  const blob = new Blob([finalContent], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename.endsWith('.md') ? filename : filename + '.md'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function saveAsPdf(filename) {
+  const originalTitle = document.title
+  document.title = filename // Set title so browser uses it as default filename
+  window.print()
+  setTimeout(() => { document.title = originalTitle }, 100)
+}
+
 function parseMarkdown(element) {
   const input = element.textContent
   const frag = document.createDocumentFragment()
@@ -204,6 +240,68 @@ function initUI() {
   const menu = document.querySelector('#menu')
   const button = document.querySelector('#button')
   const qr = document.querySelector('#qr')
+
+  // Save Modal Logic
+  const saveModal = document.getElementById('save-modal')
+  const saveOptions = document.getElementById('save-options')
+  const filenameInputArea = document.getElementById('filename-input-area')
+  const saveHtmlBtn = document.getElementById('save-html-btn')
+  const saveMdBtn = document.getElementById('save-md-btn')
+  const savePdfBtn = document.getElementById('save-pdf-btn')
+  const closeSaveModal = document.getElementById('close-save-modal')
+  const backSaveModal = document.getElementById('back-save-modal')
+  const confirmSaveBtn = document.getElementById('confirm-save-btn')
+  const filenameInput = document.getElementById('filename-input')
+
+  let currentSaveMode = 'md'
+
+  if (saveHtmlBtn) {
+    saveHtmlBtn.addEventListener('click', () => {
+      saveModal.classList.remove('visible')
+      download()
+    })
+
+    saveMdBtn.addEventListener('click', () => {
+      currentSaveMode = 'md'
+      saveOptions.style.display = 'none'
+      filenameInputArea.style.display = 'block'
+      updateTitle()
+      filenameInput.value = document.title
+      filenameInput.focus()
+    })
+
+    savePdfBtn.addEventListener('click', () => {
+      currentSaveMode = 'pdf'
+      saveOptions.style.display = 'none'
+      filenameInputArea.style.display = 'block'
+      updateTitle()
+      filenameInput.value = document.title
+      filenameInput.focus()
+    })
+
+    closeSaveModal.addEventListener('click', () => {
+      saveModal.classList.remove('visible')
+    })
+
+    backSaveModal.addEventListener('click', () => {
+      saveOptions.style.display = 'block'
+      filenameInputArea.style.display = 'none'
+    })
+
+    confirmSaveBtn.addEventListener('click', () => {
+      const name = filenameInput.value.trim() || document.title || 'url_pad'
+      if (currentSaveMode === 'md') {
+        saveAsMarkdown(name)
+      } else if (currentSaveMode === 'pdf') {
+        saveAsPdf(name)
+      }
+      saveModal.classList.remove('visible')
+    })
+
+    saveModal.addEventListener('click', (e) => {
+      if (e.target === saveModal) saveModal.classList.remove('visible')
+    })
+  }
 
 
   const shortenBtn = document.querySelector('#shorten-btn')

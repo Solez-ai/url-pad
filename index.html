@@ -211,6 +211,12 @@
         .noprint {
             visibility: hidden !important;
         }
+
+        body,
+        article {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
     }
 
     .modal-overlay {
@@ -465,6 +471,30 @@
             style="text-align: center; margin-top: 12px; color: #666; font-size: 0.75em; display: block;">
             By clicking this you agree to process your URL <br> outside our product.
         </span>
+    </div>
+</div>
+
+<div class="modal-overlay" id="save-modal">
+    <div class="modal">
+        <h2 id="save-modal-title">Save File</h2>
+
+        <div id="save-options" class="save-options">
+            <button class="btn" id="save-html-btn" style="width:100%; margin-bottom: 10px;">Save as .html</button>
+            <button class="btn" id="save-md-btn" style="width:100%; margin-bottom: 10px;">Save as .md</button>
+            <button class="btn" id="save-pdf-btn" style="width:100%; margin-bottom: 10px;">Save as .pdf</button>
+            <div class="modal-actions" style="justify-content: center; margin-top: 16px;">
+                <button class="btn secondary" id="close-save-modal" style="width:100%;">Cancel</button>
+            </div>
+        </div>
+
+        <div id="filename-input-area" style="display:none;">
+            <p style="margin-bottom:12px; opacity: 0.8;">Enter a name for your file:</p>
+            <input type="text" id="filename-input" placeholder="filename">
+            <div class="modal-actions">
+                <button class="btn secondary" id="back-save-modal">Back</button>
+                <button class="btn" id="confirm-save-btn">Save</button>
+            </div>
+        </div>
     </div>
 </div>
 
