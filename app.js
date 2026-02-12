@@ -152,64 +152,101 @@ function saveAsPdf(filename) {
   const element = document.querySelector('article')
   const clone = element.cloneNode(true)
 
-  // Create a container to hold the clone with specific styles (White bg, black text)
+  // Create a container to hold the clone
   const container = document.createElement('div')
-  container.style.width = '750px'
-  container.style.padding = '40px'
-  container.style.backgroundColor = '#ffffff'
-  container.style.color = '#000000' // Force black text
-  container.style.font = '18px / 1.5 system-ui'
-  container.style.position = 'absolute'
-  container.style.top = '-10000px'
-  container.style.left = '0'
 
-  // Force CSS variables for this container scope to ensure generic styles use black
+  // Set explicit styles for the container to mimic a clean page
+  container.style.cssText = `
+      width: 750px;
+      padding: 40px;
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font: 18px / 1.5 system-ui, -apple-system, sans-serif !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -9999;
+      opacity: 1 !important;
+      visibility: visible !important;
+      overflow: visible;
+  `
+
+  // Force CSS variables to black/white within this scope
   container.style.setProperty('--text', '#000000')
   container.style.setProperty('--link', '#0000EE')
+  container.style.setProperty('--elevated', '#ffffff')
 
-  // Clean the clone
-  clone.removeAttribute('style') // Remove user custom styles
-  clone.style.margin = '0'
-  clone.style.padding = '0'
-  clone.style.outline = 'none'
-  clone.style.border = 'none'
-  clone.style.minHeight = 'auto'
-  clone.style.width = '100%'
-  clone.style.color = '#000000'
+  // Reset styles on the clone itself
+  clone.removeAttribute('style')
+  clone.style.cssText = `
+      margin: 0;
+      padding: 0;
+      outline: none;
+      border: none;
+      min-height: auto;
+      width: 100%;
+      color: #000000 !important;
+      background: transparent !important;
+      white-space: pre-wrap;
+      opacity: 1 !important;
+      visibility: visible !important;
+  `
+  clone.removeAttribute('contenteditable')
 
-  // Explicitly force color on all children to override any inherited styles
+  // Aggressively force black color on ALL descendants
   const descendants = clone.querySelectorAll('*');
   descendants.forEach(child => {
-    child.style.color = '#000000';
+    child.style.cssText += `
+          color: #000000 !important;
+          background-color: transparent !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+          -webkit-text-fill-color: #000000 !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+      `;
+
     if (child.tagName === 'A') {
-      child.style.color = '#0000EE';
-      child.style.textDecoration = 'underline';
+      child.style.cssText += `
+            color: #0000EE !important;
+            text-decoration: underline !important;
+            -webkit-text-fill-color: #0000EE !important;
+          `;
     }
   });
 
   container.appendChild(clone)
   document.body.appendChild(container)
 
+  // Options for html2pdf
   const opt = {
     margin: 10,
     filename: filename.endsWith('.pdf') ? filename : filename + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: 1000,
+      height: container.scrollHeight + 100
+    },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   }
 
-  // Check if html2pdf is loaded
   if (typeof html2pdf !== 'undefined') {
-    html2pdf().from(container).set(opt).save().then(() => {
-      document.body.removeChild(container)
-    }).catch(err => {
-      console.error(err)
-      alert('Error generating PDF')
-      document.body.removeChild(container)
-    })
+    // Small delay to ensure DOM is updated
+    setTimeout(() => {
+      html2pdf().from(container).set(opt).save().then(() => {
+        if (container.parentNode) document.body.removeChild(container)
+      }).catch(err => {
+        console.error(err)
+        alert('Error generating PDF')
+        if (container.parentNode) document.body.removeChild(container)
+      })
+    }, 100)
   } else {
     alert('PDF library not loaded. Please try again or check internet connection.')
-    document.body.removeChild(container)
+    if (container.parentNode) document.body.removeChild(container)
   }
 }
 
