@@ -157,11 +157,15 @@ function saveAsPdf(filename) {
   container.style.width = '750px'
   container.style.padding = '40px'
   container.style.backgroundColor = '#ffffff'
-  container.style.color = '#000000'
+  container.style.color = '#000000' // Force black text
   container.style.font = '18px / 1.5 system-ui'
   container.style.position = 'absolute'
   container.style.top = '-10000px'
   container.style.left = '0'
+
+  // Force CSS variables for this container scope to ensure generic styles use black
+  container.style.setProperty('--text', '#000000')
+  container.style.setProperty('--link', '#0000EE')
 
   // Clean the clone
   clone.removeAttribute('style') // Remove user custom styles
@@ -171,7 +175,17 @@ function saveAsPdf(filename) {
   clone.style.border = 'none'
   clone.style.minHeight = 'auto'
   clone.style.width = '100%'
-  clone.style.color = '#000000' // Force black text on the clone itself
+  clone.style.color = '#000000'
+
+  // Explicitly force color on all children to override any inherited styles
+  const descendants = clone.querySelectorAll('*');
+  descendants.forEach(child => {
+    child.style.color = '#000000';
+    if (child.tagName === 'A') {
+      child.style.color = '#0000EE';
+      child.style.textDecoration = 'underline';
+    }
+  });
 
   container.appendChild(clone)
   document.body.appendChild(container)
