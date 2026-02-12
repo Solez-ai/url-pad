@@ -138,16 +138,8 @@ async function download() {
 function saveAsMarkdown(filename) {
   const article = document.querySelector('article')
   const content = article.textContent
-  const style = article.getAttribute('style')
 
-  let finalContent = content
-  // Preserve background/font if style attribute exists
-  if (style) {
-    // Injects style for markdown viewers that support HTML/CSS
-    finalContent = `<style>body { ${style} }</style>\n\n` + content
-  }
-
-  const blob = new Blob([finalContent], { type: 'text/markdown' })
+  const blob = new Blob([content], { type: 'text/markdown' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -157,10 +149,54 @@ function saveAsMarkdown(filename) {
 }
 
 function saveAsPdf(filename) {
-  const originalTitle = document.title
-  document.title = filename // Set title so browser uses it as default filename
-  window.print()
-  setTimeout(() => { document.title = originalTitle }, 100)
+  const element = document.querySelector('article')
+  const clone = element.cloneNode(true)
+
+  // Create a container to hold the clone with specific styles (White bg, black text)
+  const container = document.createElement('div')
+  container.style.width = '750px'
+  container.style.padding = '40px'
+  container.style.backgroundColor = '#ffffff'
+  container.style.color = '#000000'
+  container.style.font = '18px / 1.5 system-ui'
+  container.style.position = 'absolute'
+  container.style.top = '-10000px'
+  container.style.left = '0'
+
+  // Clean the clone
+  clone.removeAttribute('style') // Remove user custom styles
+  clone.style.margin = '0'
+  clone.style.padding = '0'
+  clone.style.outline = 'none'
+  clone.style.border = 'none'
+  clone.style.minHeight = 'auto'
+  clone.style.width = '100%'
+  clone.style.color = '#000000' // Force black text on the clone itself
+
+  container.appendChild(clone)
+  document.body.appendChild(container)
+
+  const opt = {
+    margin: 10,
+    filename: filename.endsWith('.pdf') ? filename : filename + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+
+  // Check if html2pdf is loaded
+  if (typeof html2pdf !== 'undefined') {
+    html2pdf().from(container).set(opt).save().then(() => {
+      document.body.removeChild(container)
+    }).catch(err => {
+      console.error(err)
+      alert('Error generating PDF')
+      document.body.removeChild(container)
+    })
+  } else {
+    alert('PDF library not loaded. Please try again or check internet connection.')
+    document.body.removeChild(container)
+  }
 }
 
 function parseMarkdown(element) {
